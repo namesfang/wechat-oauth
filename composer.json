@@ -1,0 +1,33 @@
+{
+	"name" : "namesfang/wechat-oauth",
+	"description" : "微信公众号、小程序、APP授权",
+	"type" : "library",
+	"version" : "1.0.0",
+	"keywords" : [
+		"微信授权",
+		"oauth2"
+	],
+	"homepage" : "https://github.com/namesfang/wechat-oauth",
+	"authors" : [{
+			"name" : "堪笑",
+			"email" : "jixiang.f@gmail.com",
+			"role" : "Developer",
+			"homepage" : "http://cli.life"
+		}
+	],
+	"require" : {
+		"php" : ">=7.2"
+	},
+	"support" : {
+		"email" : "jixiang.f@gmail.com",
+		"issues" : "https://github.com/namesfang/wechat-oauth/issues",
+		"wiki" : "https://github.com/namesfang/wechat-oauth/wiki"
+	},
+	"license" : "MIT",
+	"autoload" : {
+		"psr-4" : {
+			"Namesfang\\WeChat\\OAuth\\" : "src"
+		}
+	},
+	"minimum-stability" : "stable"
+}
