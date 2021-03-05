@@ -23,6 +23,8 @@ class Code extends Bundle
     public function makeUrl()
     {
         $data = $this->option->getAll();
+		
+		$data['response_type'] = 'code';
         
         $url = 'https://open.weixin.qq.com/connect/oauth2/authorize';
         
