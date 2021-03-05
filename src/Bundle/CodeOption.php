@@ -43,7 +43,7 @@ class CodeOption extends Option
      */
     public function setRedirectUri($value)
     {
-        $this->redirect_uri = urlencode($value);
+        $this->redirect_uri = $value;
     }
     
     /**
