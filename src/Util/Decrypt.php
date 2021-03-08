@@ -1,4 +1,5 @@
 <?php
+
 // +-----------------------------------------------------------
 // | 微信公众号、小程序、APP授权
 // +-----------------------------------------------------------
@@ -21,6 +22,13 @@ class Decrypt
     public $error;
 
     /**
+     * 解密原始结果
+     *
+     * @var string
+     */
+    public $original;
+
+    /**
      * 解密结果
      *
      * @var array
@@ -30,50 +38,70 @@ class Decrypt
     /**
      * 执行解密
      *
-     * @param string $iv
-     *            加密算法的初始向量
      * @param string $data
      *            敏感数据
      * @param string $key
      *            小程序
-     * @param bool $json_decode
-     *            以JSON格式解析结果
+     * @param string $iv
+     *            加密算法的初始向量 必须是base64编码
+     * @param bool $key_with_base64
+     *            key 是否是base64位编码
+     * @param bool $parse_json
+     *            是否解析JSON
      * @return boolean
      */
-    public function handle($data, $key, $iv, $json_decode = true)
+    public function handle($data, $key, $iv, $key_with_base64 = true, $parse_json = true)
     {
         $method = 'AES-128-CBC';
-        
-        $keys = ['data', 'key', 'iv'];
-        
-        $length = openssl_cipher_iv_length($method);
-        
+
+        $keys = [
+            'data',
+            'key',
+            'iv'
+        ];
+
+        // 基础校验
         foreach ($keys as $name) {
             if (empty(${$name})) {
                 $this->error('参数不能为空', $name);
                 return false;
             }
-            if (strlen($data) < $length) {
-                $this->error("参数长度不小于{$length}", $name);
-                return false;
-            }
+        }
+
+        $keys = [
+            'data',
+            'iv'
+        ];
+
+        // 做一次解码操作
+        if ($key_with_base64) {
+            $keys[] = 'key';
+        }
+
+        foreach ($keys as $name) {
             ${$name} = base64_decode(${$name});
         }
-        
-        if (! $result = @openssl_decrypt($data, $method, $key, 1, $iv)) {
+
+        $length = openssl_cipher_iv_length($method);
+
+        if (strlen($iv) != $length) {
+            $this->error("参数IV长度不正确", $iv);
+            return false;
+        }
+
+        if (! $this->original = @openssl_decrypt($data, $method, $key, 1, $iv)) {
             $this->error('解密数据失败', openssl_error_string());
             return false;
         }
 
-        if ($json_decode) {
-            if (! $result = json_decode($result, true)) {
+        // 解析JSON
+        if ($parse_json) {
+            $this->result = json_decode($this->original, true);
+            if (json_last_error()) {
                 $this->error('解析数据失败', json_last_error_msg());
                 return false;
             }
         }
-
-        // 解密数据
-        $this->result = $result;
         return true;
     }
 
@@ -84,7 +112,7 @@ class Decrypt
 
     public function __toString()
     {
-        return json_encode($this->result, JSON_UNESCAPED_UNICODE);
+        return $this->original;
     }
 
     public function __get($name)
