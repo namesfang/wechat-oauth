@@ -2,6 +2,15 @@
 
 ##### 微信公众号授权 示例
 ```
+// 导入命名空间
+use Namesfang\WeChat\OAuth\Log\Logger;
+use Namesfang\WeChat\OAuth\Bundle\Code;
+use Namesfang\WeChat\OAuth\Bundle\CodeOption;
+use Namesfang\WeChat\OAuth\Bundle\AccessToken;
+use Namesfang\WeChat\OAuth\Bundle\AccessTokenOption;
+use Namesfang\WeChat\OAuth\Bundle\UserInfo;
+use Namesfang\WeChat\OAuth\Bundle\UserInfoOption;
+
 // +-----------------------------------------------------------
 // | 日志记录
 // | 自行封装需要实现 LoggerInterface 接口类
@@ -97,6 +106,12 @@ $logger->print($result->nickname);
 
 ##### 小程序code2session 示例
 ```
+// 导入命名空间
+use Namesfang\WeChat\OAuth\Log\Logger;
+use Namesfang\WeChat\OAuth\Bundle\AccessToken;
+use Namesfang\WeChat\OAuth\Bundle\AccessTokenOption;
+use Namesfang\WeChat\OAuth\Util\Decrypt;
+
 // +-----------------------------------------------------------
 // | 日志记录
 // | 自行封装需要实现 LoggerInterface 接口类
@@ -130,6 +145,21 @@ $result = $token->request(true);
 $logger->print($result->original, true);
 
 $logger->print($result->openid);
+
+// +-----------------------------------------------------------
+// | 解密小程序敏感数据
+// +-----------------------------------------------------------
+//
+// 将 wx.getUserInfo 回调函数返回的参数分别传入
+//
+$decrypt = new Decrypt();
+
+// 解密成功
+if($decrypt->handle('encryptedData', $result->session_key, $result->iv)) {
+    $logger->print($decrypt->result);
+} else {
+    $logger->print($decrypt->error);
+}
 ```
 
 ##### 刷新 ACCESS TOKEN
@@ -172,18 +202,34 @@ $logger->print($result->original, true);
 $logger->print($result->errmsg);
 ```
 
-##### 解密小程序敏感数据
+##### 加密
 ```
-// 实例化传入参数
-$decrypt = new Decrypt('iv', 'data', 'session_key');
+// 导入命名空间
+use Namesfang\WeChat\OAuth\Util\Encrypt;
+
+$decrypt = new Encrypt();
+
+// 加密成功
+if($encrypt->handle('明文数据 自动将（array或object）转为JSON')) {
+    print_r($encrypt->key);
+    print_r($encrypt->iv);
+    print_r($encrypt->result);
+} else {
+    echo $encrypt->error;
+}
+```
+
+##### 解密
+```
+// 导入命名空间
+use Namesfang\WeChat\OAuth\Util\Decrypt;
+
+$decrypt = new Decrypt();
 
 // 解密成功
-if($decrypt->handle()) {
-    // 解密的所有数据
-    print_r($decrypt->decrypt);
-    // 获得解密数据中的某个字段
-    echo $decrypt->nickName;
+if($decrypt->handle($encrypt->data, $encrypt->key, $encrypt->iv)) {
+    $logger->print($decrypt->result);
 } else {
-    echo $decrypt->error;
+    $logger->print($decrypt->error);
 }
 ```
