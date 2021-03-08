@@ -8,80 +8,87 @@
 namespace Namesfang\WeChat\OAuth\Util;
 
 /**
- * 适用于微信小程序
  * 解密 AES-128-CBC PKCS#7填充
  */
 class Decrypt
 {
-    // 错误信息
-    public $error;
-    
-    // 解密数据
-    public $decrypt = [];
-    
-    protected $iv;
-    protected $data;
-    protected $session_key;
-    
+
     /**
-     * @param string $iv 加密算法的初始向量
-     * @param string $data 敏感数据
-     * @param string $session_key
+     * 错误信息
+     *
+     * @var string
      */
-    public function __construct($iv, $data, $session_key)
-    {
-        $keys = [
-            'iv',
-            'data',
-            'session_key'
-        ];
-        
-        foreach ($keys as $key) {
-            if(empty(${$key})) {
-                $this->error('参数不能为空', $key);
-                break;
-            }
-            $this->$key = base64_decode("${$key}");
-        }
-    }
-    
+    public $error;
+
+    /**
+     * 解密结果
+     *
+     * @var array
+     */
+    public $result = [];
+
     /**
      * 执行解密
+     *
+     * @param string $iv
+     *            加密算法的初始向量
+     * @param string $data
+     *            敏感数据
+     * @param string $key
+     *            小程序
+     * @param bool $json_decode
+     *            以JSON格式解析结果
      * @return boolean
      */
-    public function handle()
+    public function handle($data, $key, $iv, $json_decode = true)
     {
-        if($this->error) {
-            return false;
+        $method = 'AES-128-CBC';
+        
+        $keys = ['data', 'key', 'iv'];
+        
+        $length = openssl_cipher_iv_length($method);
+        
+        foreach ($keys as $name) {
+            if (empty(${$name})) {
+                $this->error('参数不能为空', $name);
+                return false;
+            }
+            if (strlen($data) < $length) {
+                $this->error("参数长度不小于{$length}", $name);
+                return false;
+            }
+            ${$name} = base64_decode(${$name});
         }
         
-        if(!$decrypt = @openssl_decrypt($this->data, 'AES-128-CBC', $this->session_key, 1, $this->iv)) {
+        if (! $result = @openssl_decrypt($data, $method, $key, 1, $iv)) {
             $this->error('解密数据失败', openssl_error_string());
             return false;
         }
-        
-        if(!$decrypt = json_decode($decrypt, true)) {
-            $this->error('解析数据失败', json_last_error_msg());
-            return false;
+
+        if ($json_decode) {
+            if (! $result = json_decode($result, true)) {
+                $this->error('解析数据失败', json_last_error_msg());
+                return false;
+            }
         }
-        
+
         // 解密数据
-        $this->decrypt = $decrypt;
+        $this->result = $result;
         return true;
     }
-    
+
     protected function error($phrase, $message)
     {
         $this->error = "{$phrase}[{$message}]";
     }
-    
+
     public function __toString()
     {
-        return json_encode($this->decrypt, JSON_UNESCAPED_UNICODE);
+        return json_encode($this->result, JSON_UNESCAPED_UNICODE);
     }
-    
+
     public function __get($name)
     {
-        return $this->decrypt[ $name ] ?? null;
+        return $this->result[$name] ?? null;
     }
 }
