@@ -1,11 +1,8 @@
 <?php
 use Namesfang\WeChat\OAuth\Log\Logger;
-use Namesfang\WeChat\OAuth\Bundle\Code;
-use Namesfang\WeChat\OAuth\Bundle\CodeOption;
 use Namesfang\WeChat\OAuth\Bundle\AccessToken;
 use Namesfang\WeChat\OAuth\Bundle\AccessTokenOption;
-use Namesfang\WeChat\OAuth\Bundle\UserInfo;
-use Namesfang\WeChat\OAuth\Bundle\UserInfoOption;
+use Namesfang\WeChat\OAuth\Util\Decrypt;
 
 // +-----------------------------------------------------------
 // | 授权登录示例
@@ -55,4 +52,18 @@ $logger->print($result->original, true);
 
 $logger->print($result->openid);
 
+// +-----------------------------------------------------------
+// | 使用 session_key 解密小程序
+// +-----------------------------------------------------------
 
+//
+// 将 wx.getUserInfo 回调函数返回的参数分别传入
+//
+$decrypt = new Decrypt();
+
+// 处理成功
+if($decrypt->handle('encryptedData', 'session_key', 'iv')) {
+    $logger->print($decrypt->result);
+} else {
+    $logger->print($decrypt->error);
+}
