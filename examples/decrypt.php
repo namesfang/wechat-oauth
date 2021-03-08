@@ -2,7 +2,7 @@
 use Namesfang\WeChat\OAuth\Util\Decrypt;
 
 // +-----------------------------------------------------------
-// | 解密示例
+// | 解密示例(小程序或使用Encrypt加密的数据)
 // +-----------------------------------------------------------
 
 define('ROOT_PATH', dirname(__DIR__));
@@ -16,14 +16,15 @@ spl_autoload_register(function ($className) {
 });
 
 // 实例化传入参数
-$decrypt = new Decrypt('iv', 'data', 'session_key');
+$decrypt = new Decrypt();
 
 // 解密成功
-if($decrypt->handle()) {
+$data = 'dvTQ+7xIf50XZiAxgmK7MET/D0KuZXT3vnqKQH7xSOZs7398IM3j6yY4JoT1LmV/kUKjmvuHQFhAcT9Hk1UTiQ==';
+$key = 'unL6o+/nAVLLKpIZKyh1Pw==';
+$iv = 'Qtfz7sRTcv5c6iEsRv73qA==';
+if($decrypt->handle($data, $key, $iv, false)) {
     // 解密的所有数据
-    print_r($decrypt->decrypt);
-    // 获得解密数据中的某个字段
-    echo $decrypt->nickName;
+    print_r($decrypt->result);
 } else {
     echo $decrypt->error;
 }
