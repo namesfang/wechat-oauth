@@ -19,11 +19,13 @@ spl_autoload_register(function ($className) {
 $decrypt = new Decrypt();
 
 // 解密成功
-$data = 'dvTQ+7xIf50XZiAxgmK7MET/D0KuZXT3vnqKQH7xSOZs7398IM3j6yY4JoT1LmV/kUKjmvuHQFhAcT9Hk1UTiQ==';
-$key = 'unL6o+/nAVLLKpIZKyh1Pw==';
-$iv = 'Qtfz7sRTcv5c6iEsRv73qA==';
-if($decrypt->handle($data, $key, $iv, false)) {
+$data = 'nyMFDVvDSox/VJ72Ccg9R9TeYfnWsCNoDRFUROiO/xB2tl5Nu8ojn7ikxdA0QiS/+qdDS4qjhePa1RKn0FPwPQ==';
+$key = '7v0CDdoxoLJU+cv+R3KrtQ==';
+$iv = 'n+VYyfH93TZj8r6h4uDENQ==';
+if($decrypt->handle($data, $key, $iv, true, false)) {
     // 解密的所有数据
+    print_r($decrypt->original);
+    // parse_json为真时
     print_r($decrypt->result);
 } else {
     echo $decrypt->error;
