@@ -43,13 +43,17 @@ class Encrypt
     public $key;
 
     /**
-     * 执行解密
+     * 执行加密
      *
      * @param mixed $data
      *            array或object类型会自动转为 JSON
+     * @param string $key
+     *
+     * @param bool $key_with_base64
+     *            key是否base64编码
      * @return boolean
      */
-    public function handle($data)
+    public function handle($data, $key = null, $key_with_base64 = true)
     {
         if (empty($data)) {
             $this->error('加密数据不能为空', 'data');
@@ -60,28 +64,33 @@ class Encrypt
             $data = json_encode($data, JSON_UNESCAPED_UNICODE);
         }
 
+        $iv = null;
         $method = 'AES-128-CBC';
 
         $length = openssl_cipher_iv_length($method);
 
         $keys = [
-            'key',
             'iv'
         ];
+
+        // 自动生成
+        if (empty($key)) {
+            $keys[] = 'key';
+        } // 解码一次
+        else if ($key_with_base64) {
+            $this->key = $key;
+            $key = base64_decode($key);
+        }
         
-        $key = null;
-        $iv = null;
-        
-        // 生成相应的数据
+        // 执行自动生成
         foreach ($keys as $name) {
             if (! ${$name} = openssl_random_pseudo_bytes($length)) {
                 $this->error("生成{$name}失败", openssl_error_string());
                 return false;
             }
-            // 转码易于传输
             $this->$name = base64_encode(${$name});
         }
-        
+
         // 加密数据
         if ($result = openssl_encrypt($data, $method, $key, 1, $iv)) {
             $this->result = base64_encode($result);
